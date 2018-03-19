@@ -1,6 +1,7 @@
 #!/bin/bash
 
 pip install --upgrade ipywidgets
+pip install --no-cache-dir notebook==5.4.1
 pip2 install ipywidgets
 pip2 install traitlets
 pip2 install python-igraph
