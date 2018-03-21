@@ -7,6 +7,8 @@ import numpy as np
 
 tag_filename = "tagged_network.tsv"
 network_file = "reg_net.csv"
+heatmap_filename = "heatmap.txt"
+fixed_heatmap_filename = "tab_first_heatmap.txt"
 default_colname = "pairwise_split_499"
 
 class GeneCategories(object):
@@ -31,6 +33,25 @@ class GeneCategories(object):
         self.identities = A[:, 0]
         self.names = A[:, 2]
 
+    def fix_heatmap(self, heatmap_filename=heatmap_filename, fixed_heatmap_filename=fixed_heatmap_filename):
+        "Change id's to gene names in heatmap file and fix other formatting issues."
+        f = open(heatmap_filename)
+        outf = open(fixed_heatmap_filename, "w")
+        #outf.write(f.read())
+        headers = f.readline()
+        if headers[0] != "\t":
+            outf.write("\t")  # add a leading tab
+        outf.write(headers)
+        while 1:
+            line = f.readline()
+            if not line:
+                break
+            (identifier, etcetera) = line.split("\t", 1)
+            outf.write(self.mapid(identifier))
+            outf.write("\t")
+            outf.write(etcetera)
+        outf.close()
+
     def mapid(self, identity):
         return self.id_to_name.get(identity, identity)
 
@@ -51,7 +72,7 @@ class GeneCategories(object):
             result.append((self.mapid(source), self.mapid(target)))
         return result
 
-    def network_widget(self, verbose=True):
+    def network_widget(self, verbose=True, N=None):
         from jp_gene_viz import dNetwork, getData, dGraph, grid_forest
         dNetwork.load_javascript_support()
         if verbose:
@@ -65,7 +86,8 @@ class GeneCategories(object):
         (layout, rectangles) = grid_forest.forest_layout(G)
         if verbose:
             print("Initializing network widget")
-        N = dNetwork.NetworkDisplay()
+        if N is None:
+            N = dNetwork.NetworkDisplay()
         N.load_data(G, layout, draw=False)
         if verbose:
             print("Configuring network widget parameters.")
@@ -80,6 +102,14 @@ class GeneCategories(object):
         N.label_rectangles = True
         N.rectangle_color = "#999999"
         return N
+
+    def network_and_heatmap_widget(self, verbose=True):
+        from jp_gene_viz import LExpression
+        L = LExpression.LinkedExpressionNetwork()
+        self.network_widget(verbose=True, N=L.network)
+        self.fix_heatmap()
+        L.load_heatmap(fixed_heatmap_filename)
+        return L
         
     def get_column_by_name(self, name=default_colname):
         result = None
