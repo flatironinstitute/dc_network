@@ -10,6 +10,7 @@ network_file = "reg_net.csv"
 heatmap_filename = "heatmap.txt"
 fixed_heatmap_filename = "tab_first_heatmap.txt"
 default_colname = "pairwise_split_499"
+coding_filename = "coding.txt"
 
 class GeneCategories(object):
 
@@ -35,13 +36,38 @@ class GeneCategories(object):
 
     def fix_heatmap(self, heatmap_filename=heatmap_filename, fixed_heatmap_filename=fixed_heatmap_filename):
         "Change id's to gene names in heatmap file and fix other formatting issues."
+        
+        f = open(coding_filename)
+        sample_map = {}
+        headers = f.readline().strip().split("\t")
+        # actually
+        headers = "TIME DONOR TREATMENT CODE SAMPLE".split()
+        #print "headers " + repr(headers)
+        while 1:
+            line = f.readline().strip()
+            if not line:
+                break
+            mapping = line.split("\t")
+            #print "mapping " + repr(mapping)
+            D = dict(zip(headers, mapping))
+            sample_map[D["SAMPLE"]] = D
+            #print D
+            #break
+        def condition_description(sample_id):
+            D = sample_map.get(sample_id)
+            if D is None:
+                return sample_id
+            return ".".join([D["DONOR"], D["TIME"], D["TREATMENT"], D["CODE"] ])
         f = open(heatmap_filename)
         outf = open(fixed_heatmap_filename, "w")
         #outf.write(f.read())
         headers = f.readline()
         if headers[0] != "\t":
             outf.write("\t")  # add a leading tab
-        outf.write(headers)
+        headernames = headers.split()
+        descriptors = map(condition_description, headernames)
+        outf.write("\t".join(descriptors) + "\n")
+        #outf.write(headers)
         while 1:
             line = f.readline()
             if not line:
