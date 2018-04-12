@@ -126,6 +126,45 @@ class GeneCategories(object):
         N.rectangle_color = "#999999"
         return N
 
+    def colorize_shortest_path(self, from_tf, to_gene, color="red"):
+        N = self.network
+        dG = N.display_graph
+        edges = dG.edge_weights
+        nodes = dG.node_weights
+        back_path = {}
+        adjacent = {node: set() for node in nodes}
+        for (tf, gene) in edges:
+            adjacent[tf].add(gene)
+        horizon = {from_tf}
+        # Point back from horizon nodes to previous node on shortest paths.
+        # If there are many paths of the same length the algorithm choses one arbitrarily.
+        while horizon and (to_gene not in back_path):
+            #print "horizon", horizon
+            #print "back", back_path
+            next_horizon = set()
+            for from_gene in horizon:
+                for next_gene in adjacent[from_gene]:
+                    if next_gene not in back_path and next_gene!=from_tf:
+                        back_path[next_gene] = from_gene
+                        next_horizon.add(next_gene)
+                del adjacent[from_gene]  # prevent infinite loop if buggy
+            horizon = next_horizon
+        if to_gene not in back_path:
+            raise KeyError("no path found from %s to %s" % (repr(from_tf), repr(to_gene)))
+        gene = to_gene
+        path = set()
+        # walk backwards to construct the shortest path
+        while gene != from_tf:
+            back_gene = back_path[gene]
+            del back_path[gene]  # prevents infinite loop if buggy
+            path.add((back_gene, gene))
+            gene = back_gene
+        # path is now the shortest path: colorize it
+        for (tf, gene) in path:
+            svg_name = dG.edge_name(tf, gene)
+            N.color_overrides[svg_name] = color
+        N.draw()
+
     def apply_categorization(self, colname_pattern=default_colname, N=None):
         colname = self.match_colname(colname_pattern)
         if N is None:
