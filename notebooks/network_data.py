@@ -114,24 +114,50 @@ class GeneCategories(object):
             print("Initializing network widget")
         if N is None:
             N = dNetwork.NetworkDisplay()
+        self.network = N
         N.load_data(G, layout, draw=False)
         if verbose:
             print("Configuring network widget parameters.")
         N.container_dropdown.value = dNetwork.CANVAS
-        N.node_categories = self.top_categorization()
-        colorize = self.colorization()
+        #N.node_categories = self.top_categorization()
+        self.apply_categorization(default_colname, N)
+        self.apply_colorization(default_colname, N)
+        N.label_rectangles = True
+        N.rectangle_color = "#999999"
+        return N
+
+    def apply_categorization(self, colname_pattern=default_colname, N=None):
+        colname = self.match_colname(colname_pattern)
+        if N is None:
+            N = self.network
+        N.node_categories = self.top_categorization(colname)
+
+    def apply_colorization(self, colname_pattern=default_colname, N=None):
+        colname = self.match_colname(colname_pattern)
+        if N is None:
+            N = self.network
+        colorize = self.colorization(name=colname)
         for name in colorize:
             color = colorize[name]
             # Hack: refactor this!
             svg_name = N.display_graph.node_name(name)
             N.color_overrides[svg_name] = color
-        N.label_rectangles = True
-        N.rectangle_color = "#999999"
-        return N
+    
+    def match_colname(self, colname_pattern):
+        import fnmatch
+        headers = self.matrix[0]
+        matches = fnmatch.filter(headers, colname_pattern)
+        nmatches = len(matches)
+        if nmatches < 1:
+            raise KeyError("No match found for %s" % repr(colname_pattern))
+        if nmatches > 1:
+            raise KeyError("Too many matches for %s: %s" % (repr(colname_pattern), matches))
+        return matches[0]
 
     def network_and_heatmap_widget(self, verbose=True):
         from jp_gene_viz import LExpression
         L = LExpression.LinkedExpressionNetwork()
+        self.network_and_heatmap = L
         self.network_widget(verbose=True, N=L.network)
         self.fix_heatmap()
         L.load_heatmap(fixed_heatmap_filename)
