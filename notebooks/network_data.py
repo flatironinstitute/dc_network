@@ -262,12 +262,16 @@ class GeneCategories(object):
             result[n] = cat_to_color.get(cat, default_color)
         return result
 
-    def top_categorization(self, name=default_colname):
+    def top_categorization(self, name=default_colname, by_ordinal=True):
         top_cats = self.top_categories(name)
+        cat_to_ordinal = {cat: index for (index, cat) in enumerate(top_cats)}
         name_to_top_cat = {}
         cats = self.categories(name)
         for n in cats:
             cat = cats[n]
             if cat in top_cats:
-                name_to_top_cat[n] = cat
+                if by_ordinal:
+                    name_to_top_cat[n] = cat_to_ordinal[cat]
+                else:
+                    name_to_top_cat[n] = cat
         return name_to_top_cat
