@@ -178,6 +178,8 @@ class GeneCategories(object):
         if N is None:
             N = self.network
         N.node_categories = self.top_categorization(colname)
+        rectangle_colors = {index: color for (index, color) in enumerate(self.colors)}
+        N.rectangle_color_overrides = rectangle_colors
 
     def apply_colorization(self, colname_pattern=default_colname, N=None):
         colname = self.match_colname(colname_pattern)
@@ -264,7 +266,7 @@ class GeneCategories(object):
 
     def top_categorization(self, name=default_colname, by_ordinal=True):
         top_cats = self.top_categories(name)
-        cat_to_ordinal = {cat: index for (index, cat) in enumerate(top_cats)}
+        cat_to_ordinal = {cat: index + 1 for (index, cat) in enumerate(top_cats)}
         name_to_top_cat = {}
         cats = self.categories(name)
         for n in cats:
