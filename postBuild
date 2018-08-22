@@ -2,11 +2,11 @@
 
 pip install --upgrade ipywidgets
 pip install --no-cache-dir notebook==5.4.1
-pip2 install ipywidgets
-pip2 install traitlets
-pip2 install python-igraph
-pip2 install pycrypto
-pip2 install -e git://github.com/simonsfoundation/jp_svg_canvas#egg=jp_svg_canvas
-pip2 install -e git://github.com/simonsfoundation/jp_gene_viz#egg=jp_gene_viz
-pip2 install scipy
-pip2 install --upgrade ipykernel
+pip install ipywidgets
+pip install traitlets
+pip install python-igraph
+pip install pycrypto
+pip install -e git://github.com/simonsfoundation/jp_svg_canvas#egg=jp_svg_canvas
+pip install -e git://github.com/simonsfoundation/jp_gene_viz#egg=jp_gene_viz
+pip install scipy
+pip install --upgrade ipykernel
